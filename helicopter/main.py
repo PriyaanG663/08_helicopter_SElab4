@@ -7,7 +7,7 @@ Controls: Up/Down arrows to move.
 """
 
 import pygame
-
+import time
 from game.game_engine import GameEngine
 from game.renderer import WINDOW_SIZE
 
@@ -19,26 +19,48 @@ def main():
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("consolas", 22)
 
-    engine = GameEngine()
     running = True
-    terminator=True
     while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                engine.handle_keydown(event.key)
+        # Initialize a fresh engine for each game session
+        engine = GameEngine()
+        game_over = False
 
-        keys = pygame.key.get_pressed()
-        engine.handle_input(keys)
-        k=engine.update()
-        if k==False:
-            terminator=False
-        if terminator:
+        # --- Main Gameplay Loop ---
+        while running and not game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    engine.handle_keydown(event.key)
+
+            keys = pygame.key.get_pressed()
+            engine.handle_input(keys)
+            
+            # engine.update() returns False when the game terminates
+            if engine.update() is False:
+                game_over = True
+
             engine.draw(screen, font)
+            pygame.display.flip()
+            clock.tick(60)
 
-        pygame.display.flip()
-        clock.tick(60)
+        # --- Game Over / Wait for Key Press Loop ---
+        if running:
+            # Draw the game over / hope screen once
+            engine.hope(screen, font)
+            pygame.display.flip()
+
+            waiting_for_key = True
+            while running and waiting_for_key:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                        waiting_for_key = False
+                    elif event.type == pygame.KEYDOWN:
+                        # User pressed a key, break out of wait loop to restart
+                        waiting_for_key = False
+
+                clock.tick(60)
 
     pygame.quit()
 

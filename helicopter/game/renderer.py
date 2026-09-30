@@ -27,5 +27,8 @@ def draw_text(surface, font, text, pos, color=COLOR_TEXT):
 
 def draw_banner(surface, font, text):
     surf = font.render(text, True, (180, 40, 40))
+    surf1=font.render("Game Over",True,(180,40,40))
+    rect1=surf1.get_rect(center=(surface.get_width() // 2, surface.get_height() // 4))
     rect = surf.get_rect(center=(surface.get_width() // 2, surface.get_height() // 2))
+    surface.blit(surf1,rect1)
     surface.blit(surf, rect)

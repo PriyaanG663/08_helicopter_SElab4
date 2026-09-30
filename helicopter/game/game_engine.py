@@ -1,15 +1,9 @@
 """
 GameEngine: owns the helicopter and all obstacles.
-
-Starter version: the helicopter moves and obstacles scroll by, but
-there's no collision detection at all yet (the helicopter can fly
-straight through obstacles harmlessly), no scoring, and no shield.
-That's Tasks 2, 3, and 4. Movement also has known bugs (see
-game/helicopter.py) that Task 1 asks you to fix.
 """
 
 import random
-
+import time
 from game.helicopter import Helicopter
 from game.obstacle import Obstacle
 from game.renderer import WIDTH, HEIGHT
@@ -25,6 +19,7 @@ class GameEngine:
         self.helicopter = Helicopter(x=100, y=HEIGHT / 2)
         self.obstacles = []
         self.frames_until_spawn = 0
+        self.itime = int(time.time())
 
     def _spawn_obstacle(self):
         margin = 60
@@ -48,20 +43,35 @@ class GameEngine:
             self._spawn_obstacle()
             self.frames_until_spawn = SPAWN_INTERVAL_FRAMES
 
-
         for obstacle in self.obstacles:
             obstacle.update()
+        
         self.obstacles = [o for o in self.obstacles if not o.is_off_screen()]
 
+        # Collision Detection Logic
         for i in self.obstacles:
-            if i.x<=self.helicopter.x<= i.x+i.wall_width  or i.x<=self.helicopter.x+self.helicopter.width<=i.x+i.wall_width:
-                top_height = i.gap_y - i.gap_height / 2
-                bottom_y = i.gap_y + i.gap_height / 2
-                if not (top_height<=self.helicopter.y<=bottom_y and  top_height<=self.helicopter.y-self.helicopter.height<=bottom_y):
-                    return False
-        return True
+            # Check if helicopter is within the horizontal range of the obstacle wall
+            h_left = self.helicopter.x
+            h_right = self.helicopter.x + self.helicopter.width
+            h_top = self.helicopter.y
+            h_bottom = self.helicopter.y + self.helicopter.height
 
+            if i.x < h_right and h_left < i.x + i.wall_width:
+                top_wall_bottom = i.gap_y - i.gap_height / 2
+                bottom_wall_top = i.gap_y + i.gap_height / 2
+
+                # If any part of the helicopter hits the top or bottom wall
+                if h_top < top_wall_bottom or h_bottom > bottom_wall_top:
+                    return False
+
+        return True
 
     def draw(self, surface, font):
         from game import renderer
         renderer.draw_scene(surface, self.helicopter, self.obstacles)
+
+    def hope(self, surface, font):
+        from game import renderer
+        ftime = int(time.time())
+        score = (ftime - self.itime) * SCROLL_SPEED
+        renderer.draw_banner(surface, font, f"Points: {score}")
