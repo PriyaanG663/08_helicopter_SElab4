@@ -4,6 +4,7 @@ GameEngine: owns the helicopter and all obstacles.
 
 import random
 import time
+import pygame
 from game.helicopter import Helicopter
 from game.obstacle import Obstacle
 from game.renderer import WIDTH, HEIGHT
@@ -12,6 +13,7 @@ SPAWN_INTERVAL_FRAMES = 90
 GAP_HEIGHT = 150
 WALL_WIDTH = 60
 SCROLL_SPEED = 3
+SHIELD_COOLDOWN = 20.0
 
 
 class GameEngine:
@@ -20,6 +22,10 @@ class GameEngine:
         self.obstacles = []
         self.frames_until_spawn = 0
         self.itime = int(time.time())
+        
+        # Shield properties
+        self.shield_active = False
+        self.last_shield_used_time = -99.0
 
     def _spawn_obstacle(self):
         margin = 60
@@ -33,7 +39,11 @@ class GameEngine:
         self.helicopter.handle_input(keys_pressed)
 
     def handle_keydown(self, key):
-        pass
+        if key == pygame.K_h:
+            current_time = time.time()
+            # Check if shield is not active and cooldown has passed
+            if not self.shield_active and (current_time - self.last_shield_used_time >= SHIELD_COOLDOWN):
+                self.shield_active = True
 
     def update(self):
         self.helicopter.update(HEIGHT)
@@ -48,27 +58,25 @@ class GameEngine:
         
         self.obstacles = [o for o in self.obstacles if not o.is_off_screen()]
 
-        # Collision Detection Logic
-        for i in self.obstacles:
-            # Check if helicopter is within the horizontal range of the obstacle wall
-            h_left = self.helicopter.x
-            h_right = self.helicopter.x + self.helicopter.width
-            h_top = self.helicopter.y
-            h_bottom = self.helicopter.y + self.helicopter.height
-
-            if i.x < h_right and h_left < i.x + i.wall_width:
-                top_wall_bottom = i.gap_y - i.gap_height / 2
-                bottom_wall_top = i.gap_y + i.gap_height / 2
-
-                # If any part of the helicopter hits the top or bottom wall
-                if h_top < top_wall_bottom or h_bottom > bottom_wall_top:
+        # Precise Collision Detection using Rects
+        heli_rect = self.helicopter.get_rect()
+        for obstacle in list(self.obstacles):
+            if heli_rect.colliderect(obstacle.get_top_rect()) or heli_rect.colliderect(obstacle.get_bottom_rect()):
+                if self.shield_active:
+                    # Shield absorbs the hit and deactivates
+                    self.shield_active = False
+                    self.last_shield_used_time = time.time()
+                    self.obstacles.remove(obstacle)
+                else:
                     return False
 
         return True
 
     def draw(self, surface, font):
         from game import renderer
-        renderer.draw_scene(surface, self.helicopter, self.obstacles)
+        current_time = time.time()
+        cooldown_left = max(0.0, SHIELD_COOLDOWN - (current_time - self.last_shield_used_time))
+        renderer.draw_scene(surface, self.helicopter, self.obstacles, self.shield_active, cooldown_left, font)
 
     def hope(self, surface, font):
         from game import renderer

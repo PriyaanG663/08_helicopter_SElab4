@@ -11,14 +11,34 @@ COLOR_BG = (140, 200, 230)
 COLOR_HELI = (60, 60, 70)
 COLOR_OBSTACLE = (70, 150, 80)
 COLOR_TEXT = (20, 20, 20)
+COLOR_SHIELD = (0, 180, 255)
 
 
-def draw_scene(surface, helicopter, obstacles):
+def draw_scene(surface, helicopter, obstacles, shield_active, shield_cooldown_left, font):
     surface.fill(COLOR_BG)
     for obstacle in obstacles:
         pygame.draw.rect(surface, COLOR_OBSTACLE, obstacle.get_top_rect())
         pygame.draw.rect(surface, COLOR_OBSTACLE, obstacle.get_bottom_rect())
+    
+    # Draw Shield Aura if active
+    if shield_active:
+        shield_rect = helicopter.get_rect().inflate(10, 10)
+        pygame.draw.rect(surface, COLOR_SHIELD, shield_rect, width=3, border_radius=6)
+
     pygame.draw.rect(surface, COLOR_HELI, helicopter.get_rect(), border_radius=4)
+
+    # Render UI Text for Shield Status
+    if shield_active:
+        status_text = "Shield: ACTIVE (Press H)"
+        color = (0, 100, 200)
+    elif shield_cooldown_left > 0:
+        status_text = f"Shield Cooldown: {int(shield_cooldown_left)}s"
+        color = (120, 120, 120)
+    else:
+        status_text = "Shield: READY (Press H)"
+        color = (0, 140, 0)
+
+    draw_text(surface, font, status_text, (20, 20), color)
 
 
 def draw_text(surface, font, text, pos, color=COLOR_TEXT):
@@ -27,8 +47,8 @@ def draw_text(surface, font, text, pos, color=COLOR_TEXT):
 
 def draw_banner(surface, font, text):
     surf = font.render(text, True, (180, 40, 40))
-    surf1=font.render("Game Over",True,(180,40,40))
-    rect1=surf1.get_rect(center=(surface.get_width() // 2, surface.get_height() // 4))
+    surf1 = font.render("Game Over", True, (180, 40, 40))
+    rect1 = surf1.get_rect(center=(surface.get_width() // 2, surface.get_height() // 4))
     rect = surf.get_rect(center=(surface.get_width() // 2, surface.get_height() // 2))
-    surface.blit(surf1,rect1)
+    surface.blit(surf1, rect1)
     surface.blit(surf, rect)

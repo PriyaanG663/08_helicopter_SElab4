@@ -18,21 +18,20 @@ class Helicopter:
 
     def handle_input(self, keys_pressed):
         if keys_pressed[pygame.K_UP]:
-            if self.vy>-3*THRUST:
+            if self.vy > -3 * THRUST:
                 self.vy -= THRUST
         if keys_pressed[pygame.K_DOWN]:
-            if self.vy<3*THRUST:
+            if self.vy < 3 * THRUST:
                 self.vy += THRUST
 
     def update(self, height_bound):
         self.y += self.vy
-        if self.y < 0:
-            self.y = 0
+        if self.y - self.height / 2 < 0:
+            self.y = self.height / 2
             self.vy = 0
-        if self.y>500:
-            self.y=500
-            self.vy=0
-        # NOTE: no corresponding check against the bottom boundary
+        if self.y + self.height / 2 > height_bound:
+            self.y = height_bound - self.height / 2
+            self.vy = 0
 
     def get_rect(self):
         return pygame.Rect(

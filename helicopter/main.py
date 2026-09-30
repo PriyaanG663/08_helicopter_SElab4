@@ -3,7 +3,7 @@ Helicopter Game (Lab Starter)
 
 Run with:  python3 main.py
 
-Controls: Up/Down arrows to move.
+Controls: Up/Down arrows to move, H to activate Shield.
 """
 
 import pygame
@@ -46,7 +46,6 @@ def main():
 
         # --- Game Over / Wait for Key Press Loop ---
         if running:
-            # Draw the game over / hope screen once
             engine.hope(screen, font)
             pygame.display.flip()
 
@@ -57,7 +56,7 @@ def main():
                         running = False
                         waiting_for_key = False
                     elif event.type == pygame.KEYDOWN:
-                        # User pressed a key, break out of wait loop to restart
+                        # User pressed any key, restart game
                         waiting_for_key = False
 
                 clock.tick(60)
