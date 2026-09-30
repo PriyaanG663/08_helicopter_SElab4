@@ -48,9 +48,19 @@ class GameEngine:
             self._spawn_obstacle()
             self.frames_until_spawn = SPAWN_INTERVAL_FRAMES
 
+
         for obstacle in self.obstacles:
             obstacle.update()
         self.obstacles = [o for o in self.obstacles if not o.is_off_screen()]
+
+        for i in self.obstacles:
+            if i.x<=self.helicopter.x<= i.x+i.wall_width  or i.x<=self.helicopter.x+self.helicopter.width<=i.x+i.wall_width:
+                top_height = i.gap_y - i.gap_height / 2
+                bottom_y = i.gap_y + i.gap_height / 2
+                if not (top_height<=self.helicopter.y<=bottom_y and  top_height<=self.helicopter.y-self.helicopter.height<=bottom_y):
+                    return False
+        return True
+
 
     def draw(self, surface, font):
         from game import renderer

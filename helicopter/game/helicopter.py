@@ -27,6 +27,9 @@ class Helicopter:
         if self.y < 0:
             self.y = 0
             self.vy = 0
+        if self.y>500:
+            self.y=500
+            self.vy=0
         # NOTE: no corresponding check against the bottom boundary
 
     def get_rect(self):

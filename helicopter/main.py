@@ -21,6 +21,7 @@ def main():
 
     engine = GameEngine()
     running = True
+    terminator=True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -30,8 +31,11 @@ def main():
 
         keys = pygame.key.get_pressed()
         engine.handle_input(keys)
-        engine.update()
-        engine.draw(screen, font)
+        k=engine.update()
+        if k==False:
+            terminator=False
+        if terminator:
+            engine.draw(screen, font)
 
         pygame.display.flip()
         clock.tick(60)
